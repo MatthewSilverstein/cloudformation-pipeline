@@ -14,6 +14,12 @@ Parameters:
   GitHubToken:
     Type: String
     NoEcho: "true"
+  BuildSpecBuild:
+    Type: String
+    Default: buildspec-build.yml
+  BuildSpecDeploy:
+    Type: String
+    Default: buildspec-deploy.yml
 Resources:
   AppPipeline:
     Type: 'AWS::CodePipeline::Pipeline'
@@ -119,7 +125,7 @@ Resources:
         PrivilegedMode: false
       Source:
         Type: CODEPIPELINE
-        BuildSpec: "buildspec-build.yml"
+        BuildSpec: !Ref BuildSpecBuild
       TimeoutInMinutes: 60
   CodeBuildMavenBuildRole:
     Type: "AWS::IAM::Role"
@@ -155,7 +161,7 @@ Resources:
           Value: alpha
       Source:
         Type: CODEPIPELINE
-        BuildSpec: "buildspec-deploy.yml"
+        BuildSpec: BuildSpecDeploy
       TimeoutInMinutes: 60
   CodeBuildDeployAlphaRole:
     Type: "AWS::IAM::Role"
@@ -191,7 +197,7 @@ Resources:
           Value: beta
       Source:
         Type: CODEPIPELINE
-        BuildSpec: "buildspec-deploy.yml"
+        BuildSpec: BuildSpecDeploy
       TimeoutInMinutes: 60
   CodeBuildDeployBetaRole:
     Type: "AWS::IAM::Role"
