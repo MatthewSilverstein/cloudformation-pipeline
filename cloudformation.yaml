@@ -20,6 +20,9 @@ Parameters:
   BuildSpecDeploy:
     Type: String
     Default: buildspec-deploy.yml
+  BuildSpecIntegrationTest:
+    Type: String
+    Default: buildspec-integration-test.yml
 Resources:
   AppPipeline:
     Type: 'AWS::CodePipeline::Pipeline'
@@ -81,6 +84,19 @@ Resources:
               Configuration:
                 ProjectName: !Ref CodeBuildDeployAlphaProject
               RunOrder: 1
+            - InputArtifacts:
+                - Name: !Join ["-", [Ref: MyApp, "Alpha"]]
+              Name: IntegrationTestAlpha
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Version: '1'
+                Provider: CodeBuild
+              OutputArtifacts:
+                - Name: !Join ["-", [Ref: MyApp, "IntegrationTestAlpha"]]
+              Configuration:
+                ProjectName: !Ref CodeBuildIntegrationTestAlphaProject
+              RunOrder: 2
         - Name: Beta
           Actions:
             - InputArtifacts:
@@ -161,7 +177,7 @@ Resources:
           Value: alpha
       Source:
         Type: CODEPIPELINE
-        BuildSpec: BuildSpecDeploy
+        BuildSpec: !Ref BuildSpecDeploy
       TimeoutInMinutes: 60
   CodeBuildDeployAlphaRole:
     Type: "AWS::IAM::Role"
@@ -176,6 +192,42 @@ Resources:
               Service: "codebuild.amazonaws.com"
       Path: "/service-role/"
       RoleName: !Sub ${AWS::StackName}CodeBuildDeployAlphaRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AdministratorAccess
+  CodeBuildIntegrationTestAlphaProject:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name: !Sub ${AWS::StackName}CodeBuildIntegrationTestAlphaProject
+      Description: A description about my project
+      ServiceRole: !GetAtt [CodeBuildIntegrationTestAlphaRole, Arn]
+      Artifacts:
+        Packaging: NONE
+        Type: CODEPIPELINE
+      Environment:
+        Type: LINUX_CONTAINER
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/java:openjdk-8
+        PrivilegedMode: false
+        EnvironmentVariables:
+        - Name: STAGE
+          Value: alpha
+      Source:
+        Type: CODEPIPELINE
+        BuildSpec: !Ref BuildSpecIntegrationTest
+      TimeoutInMinutes: 60
+  CodeBuildIntegrationTestAlphaRole:
+    Type: "AWS::IAM::Role"
+    Properties: 
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Action: "sts:AssumeRole"
+            Effect: "Allow"
+            Principal:
+              Service: "codebuild.amazonaws.com"
+      Path: "/service-role/"
+      RoleName: !Sub ${AWS::StackName}CodeBuildIntegrationTestAlphaRole
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/AdministratorAccess
   CodeBuildDeployBetaProject:
@@ -197,7 +249,7 @@ Resources:
           Value: beta
       Source:
         Type: CODEPIPELINE
-        BuildSpec: BuildSpecDeploy
+        BuildSpec: !Ref BuildSpecDeploy
       TimeoutInMinutes: 60
   CodeBuildDeployBetaRole:
     Type: "AWS::IAM::Role"
