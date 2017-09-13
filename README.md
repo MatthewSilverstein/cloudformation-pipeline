@@ -2,6 +2,8 @@
 
 This repo creates a fully managed AWS CodePipeline that automatically builds and deploys everytime code is committed to GitHub.
 
+Here is an example application using this template: https://github.com/MatthewSilverstein/serverless-java
+
 ## Pipeline stages
 Source (GitHub)
 
