@@ -79,28 +79,24 @@ Resources:
                 Owner: AWS
                 Version: '1'
                 Provider: CodeBuild
-              OutputArtifacts:
-                - Name: !Join ["-", [Ref: MyApp, "Alpha"]]
               Configuration:
                 ProjectName: !Ref CodeBuildDeployAlphaProject
               RunOrder: 1
             - InputArtifacts:
-                - Name: !Join ["-", [Ref: MyApp, "Alpha"]]
+                - Name: !Join ["-", [Ref: MyApp, "Build"]]
               Name: IntegrationTestAlpha
               ActionTypeId:
                 Category: Build
                 Owner: AWS
                 Version: '1'
                 Provider: CodeBuild
-              OutputArtifacts:
-                - Name: !Join ["-", [Ref: MyApp, "IntegrationTestAlpha"]]
               Configuration:
                 ProjectName: !Ref CodeBuildIntegrationTestAlphaProject
               RunOrder: 2
         - Name: Beta
           Actions:
             - InputArtifacts:
-                - Name: !Join ["-", [Ref: MyApp, "Alpha"]]
+                - Name: !Join ["-", [Ref: MyApp, "Build"]]
               Name: DeployBeta
               ActionTypeId:
                 Category: Build
